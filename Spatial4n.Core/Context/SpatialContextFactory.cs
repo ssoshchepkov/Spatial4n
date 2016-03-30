@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Spatial4n.Core.Distance;
 using Spatial4n.Core.Shapes;
+using System.Linq;
 
 namespace Spatial4n.Core.Context
 {
@@ -58,10 +59,18 @@ namespace Spatial4n.Core.Context
             else
             {
                 Type t = Type.GetType(cname);
+
+#if PORTABLE
+                var info = t.GetTypeInfo();
+#endif
                 instance = (SpatialContextFactory)Activator.CreateInstance(t);
-                
+
                 //See if the specified type has subclassed the "NewSpatialContext" method and if so call it to do the setup
+#if PORTABLE
+                var subClassedMethod = info.DeclaredMethods.FirstOrDefault(m => m.Name == "NewSpatialContext" && !m.IsPublic);
+#else
                 var subClassedMethod = t.GetMethod("NewSpatialContext", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+#endif
                 if (subClassedMethod != null)
                     return (SpatialContext)subClassedMethod.Invoke(instance, new object[] { });
 
@@ -91,23 +100,23 @@ namespace Spatial4n.Core.Context
             String calcStr;
             if (!Args.TryGetValue("distCalculator", out calcStr) || calcStr == null)
                 return;
-            if (calcStr.Equals("haversine", StringComparison.InvariantCultureIgnoreCase))
+            if (calcStr.Equals("haversine", StringComparison.OrdinalIgnoreCase))
             {
                 Calculator = new GeodesicSphereDistCalc.Haversine();
             }
-            else if (calcStr.Equals("lawOfCosines", StringComparison.InvariantCultureIgnoreCase))
+            else if (calcStr.Equals("lawOfCosines", StringComparison.OrdinalIgnoreCase))
             {
                 Calculator = new GeodesicSphereDistCalc.LawOfCosines();
             }
-            else if (calcStr.Equals("vincentySphere", StringComparison.InvariantCultureIgnoreCase))
+            else if (calcStr.Equals("vincentySphere", StringComparison.OrdinalIgnoreCase))
             {
                 Calculator = new GeodesicSphereDistCalc.Vincenty();
             }
-            else if (calcStr.Equals("cartesian", StringComparison.InvariantCultureIgnoreCase))
+            else if (calcStr.Equals("cartesian", StringComparison.OrdinalIgnoreCase))
             {
                 Calculator = new CartesianDistCalc();
             }
-            else if (calcStr.Equals("cartesian^2", StringComparison.InvariantCultureIgnoreCase))
+            else if (calcStr.Equals("cartesian^2", StringComparison.OrdinalIgnoreCase))
             {
                 Calculator = new CartesianDistCalc(true);
             }

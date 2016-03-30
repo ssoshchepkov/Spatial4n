@@ -71,31 +71,42 @@ namespace Spatial4n.Core.Io
 		/// <returns></returns>
 		public virtual String WriteShape(Shape shape)
 		{
-			// TODO: Support Java's NumberFormat behavior
+            // TODO: Support Java's NumberFormat behavior
 
-			var point = shape as Point;
+#if PORTABLE
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.PercentDecimalDigits = nfi.NumberDecimalDigits = nfi.CurrencyDecimalDigits = 2;
+            nfi.PercentDecimalSeparator = nfi.NumberDecimalSeparator = nfi.CurrencyDecimalSeparator = ".";
+            nfi.PercentGroupSeparator = nfi.NumberGroupSeparator = nfi.CurrencyGroupSeparator = ",";
+            nfi.NaNSymbol = "NaN";
+            nfi.PercentGroupSizes = nfi.NumberGroupSizes = nfi.CurrencyGroupSizes = new int[1] { 3 };
+#else
+            NumberFormatInfo nfi = CultureInfo.CreateSpecificCulture("en-US").NumberFormat;
+#endif
+
+            var point = shape as Point;
 			if (point != null)
 			{
-				return point.GetX().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   point.GetY().ToString("F6", CultureInfo.CreateSpecificCulture("en-US"));
+				return point.GetX().ToString("F6", nfi) + " " +
+					   point.GetY().ToString("F6", nfi);
 			}
 
 			var rect = shape as Rectangle;
 			if (rect != null)
 			{
-				return rect.GetMinX().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   rect.GetMinY().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   rect.GetMaxX().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   rect.GetMaxY().ToString("F6", CultureInfo.CreateSpecificCulture("en-US"));
+				return rect.GetMinX().ToString("F6", nfi) + " " +
+					   rect.GetMinY().ToString("F6", nfi) + " " +
+					   rect.GetMaxX().ToString("F6", nfi) + " " +
+					   rect.GetMaxY().ToString("F6", nfi);
 			}
 
 			var c = shape as Circle;
 			if (c != null)
 			{
 				return "Circle(" +
-					   c.GetCenter().GetX().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   c.GetCenter().GetY().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) + " " +
-					   "d=" + c.GetRadius().ToString("F6", CultureInfo.CreateSpecificCulture("en-US")) +
+					   c.GetCenter().GetX().ToString("F6", nfi) + " " +
+					   c.GetCenter().GetY().ToString("F6", nfi) + " " +
+					   "d=" + c.GetRadius().ToString("F6", nfi) +
 					   ")";
 			}
 

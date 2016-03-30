@@ -96,7 +96,11 @@ namespace Spatial4n.Core.Io.Samples
 
 		public void Close()
 		{
-			@out.Close();
-		}
-	}
+#if PORTABLE
+            @out.Dispose();
+#else
+            @out.Close();
+#endif
+        }
+    }
 }
